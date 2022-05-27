@@ -27,16 +27,18 @@ type heap[T any] struct {
 }
 
 func (h *heap[T]) Push(t T) {
-	for len(h.store) >= h.cap {
-		h.Pop()
-	}
+	defer func() {
+		for len(h.store) > h.cap {
+			h.Pop()
+		}
+	}()
 	defer h.shiftUp(len(h.store))
 	h.store = append(h.store, t)
 }
 func (h *heap[T]) Pop() (item T) {
 	return h.Remove(0)
 }
-func (h *heap[T]) Peek(t T) (item T) {
+func (h *heap[T]) Peek() (item T) {
 	if len(h.store) == 0 {
 		return
 	}
