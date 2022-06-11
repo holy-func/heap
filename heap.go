@@ -10,13 +10,19 @@ func createHeap[T any](cap int, isMaxHeap bool, less func(a, b T) bool) *heap[T]
 }
 
 //if a<b expect less(a,b)=true
-func MaxHeap[T any](cap int, less func(a, b T) bool) *heap[T] {
-	return createHeap(cap, true, less)
+func MaxHeap[T any](less func(a, b T) bool, cap ...int) *heap[T] {
+	if len(cap) == 0 {
+		return createHeap(0, true, less)
+	}
+	return createHeap(cap[0], true, less)
 }
 
 //if a<b expect less(a,b)=true
-func MinHeap[T any](cap int, less func(a, b T) bool) *heap[T] {
-	return createHeap(cap, false, less)
+func MinHeap[T any](less func(a, b T) bool, cap ...int) *heap[T] {
+	if len(cap) == 0 {
+		return createHeap(0, false, less)
+	}
+	return createHeap(cap[0], false, less)
 }
 
 type heap[T any] struct {
@@ -27,13 +33,20 @@ type heap[T any] struct {
 }
 
 func (h *heap[T]) Push(t T) {
-	defer func() {
-		for len(h.store) > h.cap {
-			h.Pop()
+	task := func() {
+		defer h.shiftUp(len(h.store))
+		h.store = append(h.store, t)
+	}
+	if h.cap == 0 || len(h.store) < h.cap {
+		task()
+	} else {
+		less := h.less(t, h.Peek())
+		if (h.maxHeap && less) || (!h.maxHeap && !less) {
+			defer h.Pop()
+			task()
 		}
-	}()
-	defer h.shiftUp(len(h.store))
-	h.store = append(h.store, t)
+
+	}
 }
 func (h *heap[T]) Pop() (item T) {
 	return h.Remove(0)
