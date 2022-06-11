@@ -105,6 +105,9 @@ func (h *heap[T]) Remove(pos int) (t T) {
 func (h *heap[T]) Fix(pos int) {
 	h.Push(h.Remove(pos))
 }
+func (h *heap[T]) Length() int {
+	return len(h.store)
+}
 func parent(pos int) int {
 	return (pos - 1) >> 1
 }
